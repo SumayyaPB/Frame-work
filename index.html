@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Save Framed Image</title>
+    <style>
+        #frame-container {
+            width:300px;
+            height:300px;
+            position:relative;
+            border-radius:15px;
+            overflow:hidden;
+            border:15px solid gold; /* Frame */
+            box-shadow:0 0 10px rgba(0,0,0,0.5);
+        }
+
+        #user-image {
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            display:none;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Upload & Save Image with Frame</h2>
+
+<input type="file" id="upload">
+
+<div id="frame-container">
+    <img id="user-image">
+</div>
+
+<button onclick="saveToServer()">Save to Gallery</button>
+
+<canvas id="canvas" width="300" height="300" style="display:none"></canvas>
+
+<script>
+let upload = document.getElementById("upload");
+let userImg = document.getElementById("user-image");
+
+upload.onchange = function(e) {
+    let file = e.target.files[0];
+    userImg.src = URL.createObjectURL(file);
+    userImg.style.display = "block";
+};
+
+async function saveToServer() {
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+
+    if (!userImg.src) {
+        alert("Upload image first!");
+        return;
+    }
+
+    await new Promise(resolve =>
+        userImg.complete && userImg.naturalWidth !== 0
+            ? resolve() : userImg.onload = resolve
+    );
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw image
+    ctx.drawImage(userImg, 0, 0, canvas.width, canvas.height);
+
+    // Draw frame border on canvas
+    ctx.strokeStyle = "gold";
+    ctx.lineWidth = 20;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+    let base64 = canvas.toDataURL("image/png");
+
+    console.log("Sending Base64 length:", base64.length);
+
+    const res = await fetch("http://localhost:4000/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64 })
+    });
+
+    alert(await res.text());
+}
+</script>
+
+</body>
+</html>
