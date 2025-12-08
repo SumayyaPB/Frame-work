@@ -1,135 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Save Framed Image</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Frame Maker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            background: #f6f6f6;
-        }
 
-        h2 {
-            text-align: center;
-        }
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+<link rel="stylesheet" href="./style.css">
 
-        #frame-container {
-            width: 90vw;
-            max-width: 350px;
-            aspect-ratio: 1 / 1;  /* Keeps perfect square */
-            position: relative;
-            border-radius: 15px;
-            overflow: hidden;
-            border: 12px solid rgb(41, 168, 130);
-            box-shadow: 0 0 12px rgba(0,0,0,0.3);
-            background: #ddd;
-            margin-top: 15px;
-        }
-
-        #user-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-        }
-
-        button {
-            margin-top: 15px;
-            padding: 12px 20px;
-            background: rgb(41, 168, 130);
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 90vw;
-            max-width: 350px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-        }
-
-        button:active {
-            background: rgb(0, 255, 55);
-        }
-
-        input[type="file"] {
-            width: 90vw;
-            max-width: 350px;
-            padding: 8px;
-            font-size: 14px;
-        }
-    </style>
 </head>
-
 <body>
 
-<h2>Upload & Save Image with Frame</h2>
+<h1>SELECT A FRAME</h1>
 
-<input type="file" id="upload" accept="image/*">
+<div id="frame-gallery" class="frame-gallery"></div>
 
-<div id="frame-container">
-    <img id="user-image">
+<input type="file" id="upload" accept="image/*" style="display:none" />
+
+<h2>SET A FRAME</h2>
+
+<div id="preview-area">
+    <img id="user-photo">
+    <img id="selected-frame">
 </div>
 
-<button onclick="saveToServer()">Save to Gallery</button>
+<button id="cropBtn">Apply Crop</button>
+<button id="downloadBtn">Download Final Image</button>
 
-<canvas id="canvas" style="display:none;"></canvas>
+<canvas id="canvas" style="display:none"></canvas>
 
-<script>
-let upload = document.getElementById("upload");
-let userImg = document.getElementById("user-image");
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="./script.js"></script>
 
-upload.onchange = function(e) {
-    let file = e.target.files[0];
-    userImg.src = URL.createObjectURL(file);
-    userImg.style.display = "block";
-};
-
-async function saveToServer() {
-    let canvas = document.getElementById("canvas");
-    
-    // Match canvas to frame size dynamically
-    const container = document.getElementById("frame-container");
-    canvas.width = container.offsetWidth;
-    canvas.height = container.offsetHeight;
-
-    let ctx = canvas.getContext("2d");
-
-    if (!userImg.src) {
-        alert("Upload image first!");
-        return;
-    }
-
-    await new Promise(resolve =>
-        userImg.complete && userImg.naturalWidth !== 0
-            ? resolve() : userImg.onload = resolve
-    );
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw uploaded image
-    ctx.drawImage(userImg, 0, 0, canvas.width, canvas.height);
-
-    // Draw frame border
-    ctx.strokeStyle = "gold";
-    ctx.lineWidth = canvas.width * 0.08;  // auto scales
-    ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-    let base64 = canvas.toDataURL("image/png");
-
-    // Download image to device
-    let link = document.createElement("a");
-    link.href = base64;
-    link.download = "framed-photo.png";
-    link.click();
-
-    alert("Saved ✔ Check your gallery / downloads 📁");
-}
-</script>
 
 </body>
 </html>
