@@ -1,4 +1,4 @@
-import { API_URL } from "../config/config.js";
+const API_URL = "https://frame-work-backend.onrender.com";
 let frameWidth = 1200;
 let frameHeight = 1200;
 const upscaleFactor = 2; // 2x clarity upgrade

@@ -1,4 +1,4 @@
-import { API_URL } from "../config/config.js";
+const API_URL = "https://frame-work-backend.onrender.com";
 // Login function - stores login ONLY in this browser tab
 function loginAdmin() {
   let user = document.getElementById("adminUser").value;
