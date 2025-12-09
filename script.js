@@ -1,4 +1,3 @@
-
 /* ---------- FRAME LIST ---------- */
 const frameList = [
     "frames/frame1.png",
@@ -30,31 +29,41 @@ const preview = document.getElementById("preview-area");
 const userImg = document.getElementById("user-photo");
 const frameImg = document.getElementById("selected-frame");
 const uploadInput = document.getElementById("upload");
+const uploadBtn = document.getElementById("uploadBtn"); // <<< NEW BUTTON
 const cropBtn = document.getElementById("cropBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 
 /* ---------- SELECT FRAME ---------- */
 function selectFrame(src){
+    resetUI();
+
     frameImg.src = src;
     frameImg.style.display = "block";
     preview.style.display = "block";
     frameApplied = true;
 
-    // Reset for new upload
-    userImg.style.display = "none";
-    downloadBtn.style.display = "none";
-    cropBtn.style.display = "none";
+    uploadBtn.style.display = "block"; // <<< SHOW UPLOAD BUTTON
 }
 
-/* ---------- CLICK PREVIEW TO UPLOAD IMAGE ---------- */
-preview.onclick = () => {
-    if (!frameApplied) return alert("Please select a frame first.");
-    if (cropper) return; // prevent reopening while cropping
+/* ---------- CLICK UPLOAD BUTTON ---------- */
+uploadBtn.onclick = () => {
+    if (!frameApplied) {
+        alert("Select a frame first");
+        return;
+    }
     uploadInput.click();
 };
 
 /* ---------- UPLOAD FILE ---------- */
 uploadInput.onchange = e => {
+
+    // Remove previously injected hidden crop UI CSS
+    document.querySelectorAll(".hideCropperUI").forEach(style => style.remove());
+
+    // Hide download button when new upload happens
+    downloadBtn.style.display = "none";
+    cropBtn.style.display = "block";
+
     const file = e.target.files[0];
     if (!file) return;
 
@@ -67,7 +76,7 @@ uploadInput.onchange = e => {
 
     userImg.src = url;
     userImg.style.display = "block";
-    frameImg.style.display = "none"; // hide frame during crop setup
+    frameImg.style.display = "none";
 
     userImg.onload = () => {
         cropper = new Cropper(userImg, {
@@ -75,21 +84,41 @@ uploadInput.onchange = e => {
             viewMode: 1
         });
     };
-
-    cropBtn.style.display = "block";
 };
 
-/* ---------- APPLY CROP ---------- */
+let finalCroppedCanvas = null;  // NEW
+
 cropBtn.onclick = () => {
     if (!cropper) return;
 
-    const croppedCanvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
-    userImg.src = croppedCanvas.toDataURL("image/png");
+      finalCroppedCanvas = cropper.getCroppedCanvas({
+        width: 1200,   // High resolution output
+        height: 1200
+    })
+    userImg.src = finalCroppedCanvas.toDataURL("image/png");
 
     cropper.destroy();
     cropper = null;
 
-    userImg.style.display = "block";
+    /** Hide crop overlay elements — but NOT the image **/
+    const styleFix = document.createElement("style");
+    styleFix.className = "hideCropperUI";  // << IMPORTANT
+    styleFix.innerHTML = `
+        .cropper-crop-box,
+        .cropper-modal,
+        .cropper-drag-box,
+        .cropper-view-box,
+        .cropper-dashed,
+        .cropper-center,
+        .cropper-face {
+            display: none !important;
+        }
+    `;
+    document.head.appendChild(styleFix);
+
+    userImg.removeAttribute("style");
+    userImg.className = "";
+
     frameImg.style.display = "block";
 
     cropBtn.style.display = "none";
@@ -97,20 +126,24 @@ cropBtn.onclick = () => {
     imageCropped = true;
 };
 
+
 /* ---------- DOWNLOAD FINAL ---------- */
 downloadBtn.onclick = () => {
-    if (!imageCropped) return;
+    if (!imageCropped || !finalCroppedCanvas) return;
     
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
-    const w = preview.clientWidth;
-    const h = preview.clientHeight;
+    const w = finalCroppedCanvas.width;
+    const h = finalCroppedCanvas.height;
 
     canvas.width = w;
     canvas.height = h;
 
-    ctx.drawImage(userImg, 0, 0, w, h);
+    // draw cropped image in full clarity
+    ctx.drawImage(finalCroppedCanvas, 0, 0, w, h);
+
+    // draw frame in full clarity
     ctx.drawImage(frameImg, 0, 0, w, h);
 
     const finalURL = canvas.toDataURL("image/png");
@@ -119,4 +152,29 @@ downloadBtn.onclick = () => {
     a.href = finalURL;
     a.download = "framed-photo.png";
     a.click();
+
+    resetUI();
 };
+
+/* ---------- RESET FUNCTION ---------- */
+function resetUI(){
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+
+    frameApplied = false;
+    imageCropped = false;
+
+    cropBtn.style.display = "none";
+    downloadBtn.style.display = "none";
+    uploadBtn.style.display = "none";
+
+    preview.style.display = "none";
+    userImg.style.display = "none";
+    frameImg.style.display = "none";
+
+    userImg.src = "";
+    frameImg.src = "";
+    uploadInput.value = "";
+}
