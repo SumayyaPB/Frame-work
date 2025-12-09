@@ -1,3 +1,4 @@
+import { API_URL } from "./config.js";
 let frameWidth = 1200;
 let frameHeight = 1200;
 const upscaleFactor = 2;  // 2x clarity upgrade

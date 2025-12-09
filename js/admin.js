@@ -1,5 +1,5 @@
 
-
+import { API_URL } from "./config.js";
 // Login function - stores login ONLY in this browser tab
 function loginAdmin() {
     let user = document.getElementById("adminUser").value;
