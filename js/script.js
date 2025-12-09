@@ -24,6 +24,7 @@ function populateFrames() {
     div.onclick = () => selectFrame(src); // pass image URL directly
 
     let img = document.createElement("img");
+    img.crossOrigin = "anonymous";
     img.src = src; // show image directly from Cloudinary
 
     div.appendChild(img);
@@ -69,7 +70,8 @@ function selectFrame(src) {
     frameHeight = frameImg.naturalHeight * upscaleFactor;
     console.log("Frame UHD size:", frameWidth, frameHeight);
   };
-
+  
+  frameImg.crossOrigin = "anonymous";
   frameImg.src = src;
   frameImg.style.display = "block";
   preview.style.display = "block";
@@ -173,18 +175,26 @@ downloadBtn.onclick = () => {
   canvas.width = w;
   canvas.height = h;
 
-  ctx.drawImage(finalCroppedCanvas, 0, 0, frameWidth, frameHeight);
-  ctx.drawImage(frameImg, 0, 0, frameWidth, frameHeight);
+  // Reload frame image with CORS enabled
+  const tempImage = new Image();
+  tempImage.crossOrigin = "anonymous"; 
+  tempImage.src = frameImg.src;
 
-  const finalURL = canvas.toDataURL("image/png");
+  tempImage.onload = () => {
+    ctx.drawImage(finalCroppedCanvas, 0, 0, frameWidth, frameHeight);
+    ctx.drawImage(tempImage, 0, 0, frameWidth, frameHeight);
 
-  const a = document.createElement("a");
-  a.href = finalURL;
-  a.download = "framed-photo.png";
-  a.click();
+    const finalURL = canvas.toDataURL("image/png");
 
-  resetUI();
+    const a = document.createElement("a");
+    a.href = finalURL;
+    a.download = "framed-photo.png";
+    a.click();
+
+    resetUI();
+  };
 };
+
 
 /* ---------- RESET FUNCTION ---------- */
 function resetUI() {
