@@ -21,15 +21,16 @@ function populateFrames() {
   frameList.forEach((src) => {
     let div = document.createElement("div");
     div.className = "frame-item";
-    div.onclick = () => selectFrame(`${API_URL}/frames/` + src);
+    div.onclick = () => selectFrame(src); // pass image URL directly
 
     let img = document.createElement("img");
-    img.src = `${API_URL}/frames/` + src;
+    img.src = src; // show image directly from Cloudinary
 
     div.appendChild(img);
     gallery.appendChild(div);
   });
 }
+
 
 const gallery = document.getElementById("frame-gallery");
 
