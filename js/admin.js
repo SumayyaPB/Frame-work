@@ -81,18 +81,6 @@ function loadFrames() {
     });
 }
 
-function deleteFrame(filename) {
-  if (!confirm("Are you sure you want to delete this frame?")) return;
-
-  fetch(`${API_URL}/delete-frame/` + filename, {
-    method: "DELETE",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      alert(data.message);
-      loadFrames(); // Refresh frame list
-    });
-}
 function deleteFrame(public_id) {
   if (!confirm("Delete frame?")) return;
 
