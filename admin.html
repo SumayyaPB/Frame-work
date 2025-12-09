@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./css/admin.css">
+</head>
+
+<body>
+
+<div class="admin-login" id="login-box">
+  
+  <h2>Admin Login</h2>
+
+  <div class="login-box">
+      <input id="adminUser" placeholder="Admin Username">
+      <input id="adminPass" type="password" placeholder="Password">
+      <button onclick="loginAdmin()" class="login-button">Login</button>
+      <a href="./index.html" class="back-home">Back to Home</a>
+  </div>
+
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel" style="display:none;">
+
+  <nav class="admin-nav">
+      <h2>Admin Panel</h2>
+      <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
+  </nav>
+
+  <section class="upload-section">
+      <h3>Upload New Frame</h3>
+
+      <div class="upload-box" onclick="document.getElementById('frameFile').click()">
+          <img src="./assets/uploadImage.svg" class="upload-icon" alt="upload">
+          <p>Click to Upload Frame</p>
+      </div>
+
+      <input type="file" id="frameFile" accept="image/*" hidden>
+
+      <button onclick="uploadFrame()" class="uploadFrame">Upload Frame</button>
+      <p id="uploadMsg"></p>
+  </section>
+
+  <section class="frames-section">
+      <h3>Existing Frames</h3>
+      <div id="frameList" class="frame-grid"></div>
+  </section>
+
+</div>
+
+<script src="./js/admin.js"></script>
+
+</body>
+</html>

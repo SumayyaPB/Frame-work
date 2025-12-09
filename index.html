@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Frame Maker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+<link rel="stylesheet" href="./css/style.css">
+
+</head>
+<body>
+
+    <nav class="top-nav">
+    <div class="nav-left">Campaign Profile</div>
+
+    <div class="nav-right">
+        <button class="login-btn">Login</button>
+        <a href="./admin.html"><img src="./assets/userIcon.svg" class="user-icon" alt="user"></a>
+    </div>
+    
+</nav>
+<div>
+
+<h1>Select a Frame</h1>
+
+<div id="frame-gallery" class="frame-gallery"></div>
+</div>
+<input type="file" id="upload" accept="image/*" style="display:none" />
+
+<h2>Set a Frame</h2>
+
+<div id="preview-area">
+    <img id="user-photo">
+    <img id="selected-frame">
+</div>
+
+<button id="uploadBtn">Upload Image</button>
+<button id="cropBtn">Apply Crop</button>
+<button id="downloadBtn">Download Final Image</button>
+
+<canvas id="canvas" style="display:none"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="./js/script.js"></script>
+
+
+</body>
+</html>
