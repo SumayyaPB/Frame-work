@@ -5,11 +5,32 @@ let finalCroppedCanvas = null;
 
 
 /* ---------- FRAME LIST ---------- */
-const frameList = [
-    "frames/frame1.png",
-    "frames/frame2.png",
-    "frames/frame3.png"
-];
+let frameList = [];
+
+fetch("http://localhost:5000/frames-list")
+.then(res => res.json())
+.then(files => {
+    frameList = files;
+    populateFrames();
+});
+
+function populateFrames() {
+    const gallery = document.getElementById("frame-gallery");
+    gallery.innerHTML = "";
+
+    frameList.forEach(src => {
+        let div = document.createElement("div");
+        div.className = "frame-item";
+        div.onclick = () => selectFrame("http://localhost:5000/frames/" + src);
+
+        let img = document.createElement("img");
+        img.src = "http://localhost:5000/frames/" + src;
+
+        div.appendChild(img);
+        gallery.appendChild(div);
+    });
+}
+
 
 const gallery = document.getElementById("frame-gallery");
 

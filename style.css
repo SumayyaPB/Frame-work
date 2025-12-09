@@ -1,15 +1,14 @@
 
     * { 
         box-sizing: border-box; 
-        
+        margin: 0;
+        padding: 0;
     }
 
     body {
         font-family: Arial, sans-serif;
-        background: #0f0000;
-        padding: 20px;
+        background: #ffffff;
         text-align: center;
-        margin-inline: 30px;
     }
 
     h2 { margin-bottom: 10px; }
@@ -29,7 +28,7 @@
         border-radius: 6px;
         overflow: hidden;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 4px 12px rgba(148, 148, 148, 0.12);
         background: white;
     }
     .frame-item img {
@@ -65,14 +64,64 @@
         width: 320px;
         padding: 12px;
         border: none;
-        background: rgb(127, 180, 127);
+        background: green;
         color: white;
         border-radius: 6px;
         cursor: pointer;
         display: none;
         margin: 4px auto;
+        font-size: 17px;
     }
     h1,h2{
-        color: rgb(127, 180, 127);
+        color: green;
+        font-weight: 900;
     }
     
+/* Top Navigation Bar */
+.top-nav {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #000000;
+    padding: 0px 20px;
+    margin-bottom: 20px;
+    color: white;
+    height: 80px;
+}
+
+/* Left title */
+.nav-left {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+/* Right section */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Login button */
+.login-btn {
+    background: white;
+    color: rgb(127, 180, 127);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.login-btn:hover {
+    background: #e2ffe2;
+}
+
+/* User icon */
+.user-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+}

@@ -1,0 +1,157 @@
+/* Global Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    text-align: center;
+    min-height: 100vh;
+}
+
+/* Login UI */
+.admin-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 20px;
+}
+
+.login-box {
+    padding: 40px 20px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 350px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.login-box input {
+    width: 100%;
+    height: 45px;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 17px;
+    font-size: 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: none;
+}
+
+.login-button {
+    width: 100%;
+    background: green;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.back-home {
+    display: block;
+    margin-top: 40px;
+    font-size: 14px;
+    color: blue;
+}
+
+/* Admin Panel */
+/* Navbar */
+.admin-nav {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: black;
+    padding: 10px 20px;
+    color: white;
+}
+
+.logout-btn {
+    background: red;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+/* Upload Section */
+.upload-section {
+    margin-top: 20px;
+    padding: 15px;
+}
+
+.upload-box {
+    width: 200px;
+    height: 200px;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 10px;
+    margin: 10px auto;
+}
+
+.upload-box:hover {
+    background: rgba(0, 128, 0, 0.08);
+}
+
+.upload-icon {
+    width: 60%;
+    margin-bottom: 8px;
+}
+
+/* Upload button */
+.uploadFrame {
+    width: 200px;
+    background: green;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Frame list */
+.frames-section {
+    padding: 20px 10px;
+}
+
+.frame-grid {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* frame thumbnail */
+.frame-grid img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #dcdcdc;
+}
+
+/* Responsive text */
+h2, h3 {
+    color: green;
+    font-weight: 900;
+    margin: 10px 0;
+}
+.upload-box p{
+    font-size: 14px;
+}
+/* Mobile responsive tweaks */
+@media(max-width: 480px){
+    .admin-nav h2 { font-size: 18px; }
+    .upload-box { width: 150px; height: 150px; }
+    .uploadFrame { width: 90%; }
+    
+}
