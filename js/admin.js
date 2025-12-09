@@ -53,7 +53,7 @@ function uploadFrame() {
 
 // Load frame list from backend
 function loadFrames() {
-  fetch(`${API_URL}/frames-list`)
+  fetch(`https://frame-work-backend.onrender.com/frames-list`)
     .then((res) => res.json())
     .then((urls) => {
       let container = document.getElementById("frameList");
