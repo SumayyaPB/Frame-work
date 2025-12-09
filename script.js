@@ -1,3 +1,9 @@
+let frameWidth = 1200;
+let frameHeight = 1200;
+const upscaleFactor = 2;  // 2x clarity upgrade
+let finalCroppedCanvas = null;
+
+
 /* ---------- FRAME LIST ---------- */
 const frameList = [
     "frames/frame1.png",
@@ -37,12 +43,18 @@ const downloadBtn = document.getElementById("downloadBtn");
 function selectFrame(src){
     resetUI();
 
+    frameImg.onload = () => {
+        frameWidth = frameImg.naturalWidth * upscaleFactor;
+        frameHeight = frameImg.naturalHeight * upscaleFactor;
+        console.log("Frame UHD size:", frameWidth, frameHeight);
+    };
+
     frameImg.src = src;
     frameImg.style.display = "block";
     preview.style.display = "block";
     frameApplied = true;
 
-    uploadBtn.style.display = "block"; // <<< SHOW UPLOAD BUTTON
+    uploadBtn.style.display = "block";
 }
 
 /* ---------- CLICK UPLOAD BUTTON ---------- */
@@ -86,15 +98,16 @@ uploadInput.onchange = e => {
     };
 };
 
-let finalCroppedCanvas = null;  // NEW
 
 cropBtn.onclick = () => {
     if (!cropper) return;
 
       finalCroppedCanvas = cropper.getCroppedCanvas({
-        width: 1200,   // High resolution output
-        height: 1200
-    })
+    width: frameWidth,
+    height: frameHeight,
+    imageSmoothingEnabled: false,
+    imageSmoothingQuality: "high"
+});
     userImg.src = finalCroppedCanvas.toDataURL("image/png");
 
     cropper.destroy();
@@ -140,11 +153,9 @@ downloadBtn.onclick = () => {
     canvas.width = w;
     canvas.height = h;
 
-    // draw cropped image in full clarity
-    ctx.drawImage(finalCroppedCanvas, 0, 0, w, h);
+   ctx.drawImage(finalCroppedCanvas, 0, 0, frameWidth, frameHeight);
+ctx.drawImage(frameImg, 0, 0, frameWidth, frameHeight);
 
-    // draw frame in full clarity
-    ctx.drawImage(frameImg, 0, 0, w, h);
 
     const finalURL = canvas.toDataURL("image/png");
 
