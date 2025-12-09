@@ -43,7 +43,7 @@ function uploadFrame() {
     let formData = new FormData();
     formData.append("frame", file);
 
-    fetch("http://localhost:5000/upload-frame", {
+    fetch(`${API_URL}/upload-frame`, {
         method: "POST",
         body: formData
     })
@@ -56,7 +56,7 @@ function uploadFrame() {
 
 // Load frame list from backend
 function loadFrames() {
-    fetch("http://localhost:5000/frames-list")
+    fetch(`${API_URL}/frames-list`)
     .then(res => res.json())
     .then(files => {
         let container = document.getElementById("frameList");
@@ -69,7 +69,7 @@ function loadFrames() {
     wrapper.style.textAlign = "center";
 
     let img = document.createElement("img");
-    img.src = "http://localhost:5000/frames/" + f;
+    img.src = `${API_URL}/frames/` + f;
     img.width = 100;
 
     let btn = document.createElement("button");
@@ -99,7 +99,7 @@ function loadFrames() {
 function deleteFrame(filename) {
     if (!confirm("Are you sure you want to delete this frame?")) return;
 
-    fetch("http://localhost:5000/delete-frame/" + filename, {
+    fetch(`${API_URL}/delete-frame/` + filename, {
         method: "DELETE"
     })
     .then(res => res.json())

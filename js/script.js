@@ -7,7 +7,7 @@ let finalCroppedCanvas = null;
 /* ---------- FRAME LIST ---------- */
 let frameList = [];
 
-fetch("http://localhost:5000/frames-list")
+fetch(`${API_URL}/frames-list`)
 .then(res => res.json())
 .then(files => {
     frameList = files;
@@ -21,10 +21,10 @@ function populateFrames() {
     frameList.forEach(src => {
         let div = document.createElement("div");
         div.className = "frame-item";
-        div.onclick = () => selectFrame("http://localhost:5000/frames/" + src);
+        div.onclick = () => selectFrame(`${API_URL}/frames/` + src);
 
         let img = document.createElement("img");
-        img.src = "http://localhost:5000/frames/" + src;
+        img.src = `${API_URL}/frames/` + src;
 
         div.appendChild(img);
         gallery.appendChild(div);
