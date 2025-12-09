@@ -84,11 +84,11 @@ function loadFrames() {
 function deleteFrame(public_id) {
   if (!confirm("Delete frame?")) return;
 
-  fetch(`${API_URL}/delete-frame?public_id=${public_id}`, {
+  fetch(`${API_URL}/delete-frame?public_id=frames/${public_id}`, {
     method: "DELETE",
   })
-    .then((res) => res.json())
-    .then((data) => {
+    .then(res => res.json())
+    .then(data => {
       alert(data.message);
       loadFrames();
     });
