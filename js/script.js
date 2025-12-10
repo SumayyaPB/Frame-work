@@ -64,8 +64,22 @@ function isIOS() {
 
 /* ---------- SELECT FRAME ---------- */
 function selectFrame(src) {
-  resetUI(); // Clear previous state, cropper, etc.
+  // Clean up any old cropper / styles, but DON'T nuke everything
+  if (cropper) {
+    cropper.destroy();
+    cropper = null;
+  }
+  document.querySelectorAll(".hideCropperUI").forEach((style) => style.remove());
 
+  imageCropped = false;
+  finalCroppedCanvas = null;
+
+  // Reset buttons for new frame
+  cropBtn.style.display = "none";
+  downloadBtn.style.display = "none";
+  uploadBtn.style.display = "block";
+
+  // Show frame + preview
   frameImg.onload = () => {
     // Original frame size
     let w = frameImg.naturalWidth;
@@ -94,8 +108,11 @@ function selectFrame(src) {
 
   if (preview) preview.style.display = "block";
 
+  // Hide user image until upload
+  userImg.style.display = "none";
+  userImg.src = "";
+
   frameApplied = true;
-  uploadBtn.style.display = "block";
 }
 
 /* ---------- CLICK UPLOAD BUTTON ---------- */
@@ -133,7 +150,7 @@ uploadInput.onchange = (e) => {
   userImg.src = objectUrl;
 
   userImg.style.display = "block";
-  frameImg.style.display = "none";
+  frameImg.style.display = "none"; // hide frame while cropping
 
   userImg.onload = () => {
     URL.revokeObjectURL(objectUrl);
@@ -147,7 +164,10 @@ uploadInput.onchange = (e) => {
 
 /* ---------- CROP IMAGE ---------- */
 cropBtn.onclick = () => {
-  if (!cropper) return;
+  if (!cropper) {
+    console.warn("Cropper not initialized yet");
+    return;
+  }
 
   finalCroppedCanvas = cropper.getCroppedCanvas({
     width: frameWidth,
@@ -184,6 +204,7 @@ cropBtn.onclick = () => {
   userImg.removeAttribute("style");
   userImg.className = "";
 
+  // Show frame again, on top in CSS
   frameImg.style.display = "block";
 
   cropBtn.style.display = "none";
@@ -253,7 +274,8 @@ function resetUI() {
 
   cropBtn.style.display = "none";
   downloadBtn.style.display = "none";
-  uploadBtn.style.display = "none";
+  // Leave uploadBtn visible if you want users to start again quickly:
+  // uploadBtn.style.display = "block";
 
   if (preview) preview.style.display = "none";
 
