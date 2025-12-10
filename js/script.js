@@ -129,45 +129,55 @@ uploadInput.onchange = (e) => {
 };
 
 /* ---------- CROP ---------- */
-cropBtn.onclick = () => {
+cropBtn.onclick = async () => {
   if (!cropper) return;
 
   finalCroppedCanvas = cropper.getCroppedCanvas({
     width: frameWidth,
     height: frameHeight,
-    imageSmoothingEnabled: false,
+    imageSmoothingEnabled: true,
     imageSmoothingQuality: "high",
   });
 
-  userImg.src = finalCroppedCanvas.toDataURL("image/png");
+  // Convert to blob (Safari safe version)
+  finalCroppedCanvas.toBlob(async (blob) => {
 
-  cropper.destroy();
-  cropper = null;
+    const imageURL = URL.createObjectURL(blob);
 
-  const styleFix = document.createElement("style");
-  styleFix.className = "hideCropperUI";
-  styleFix.innerHTML = `
-    .cropper-crop-box,
-    .cropper-modal,
-    .cropper-drag-box,
-    .cropper-view-box,
-    .cropper-dashed,
-    .cropper-center,
-    .cropper-face {
-        display: none !important;
-    }
-  `;
-  document.head.appendChild(styleFix);
+    userImg.src = imageURL;
+    userImg.style.display = "block";
 
-  userImg.removeAttribute("style");
-  userImg.className = "";
+    // Wait for iPhone to render decoded image
+    try {
+      await userImg.decode?.();
+    } catch(e) {}
 
-  frameImg.style.display = "block";
+    cropper.destroy();
+    cropper = null;
 
-  cropBtn.style.display = "none";
-  downloadBtn.style.display = "block";
-  imageCropped = true;
+    const styleFix = document.createElement("style");
+    styleFix.className = "hideCropperUI";
+    styleFix.innerHTML = `
+      .cropper-crop-box,
+      .cropper-modal,
+      .cropper-drag-box,
+      .cropper-view-box,
+      .cropper-dashed,
+      .cropper-center,
+      .cropper-face {
+          display:none !important;
+      }
+    `;
+    document.head.appendChild(styleFix);
+
+    frameImg.style.display = "block";
+    cropBtn.style.display = "none";
+    downloadBtn.style.display = "block";
+    imageCropped = true;
+
+  }, "image/png", 1.0);
 };
+
 
 /* ---------- DOWNLOAD FINAL ---------- */
 downloadBtn.onclick = () => {
