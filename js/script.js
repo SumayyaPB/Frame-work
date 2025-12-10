@@ -91,36 +91,41 @@ uploadBtn.onclick = () => {
 
 /* ---------- UPLOAD FILE ---------- */
 uploadInput.onchange = (e) => {
-  // Remove previously injected hidden crop UI CSS
-  document
-    .querySelectorAll(".hideCropperUI")
-    .forEach((style) => style.remove());
+  document.querySelectorAll(".hideCropperUI").forEach((style) => style.remove());
 
-  // Hide download button when new upload happens
   downloadBtn.style.display = "none";
   cropBtn.style.display = "block";
 
   const file = e.target.files[0];
   if (!file) return;
 
-  const url = URL.createObjectURL(file);
+  const reader = new FileReader();
+  
+  reader.onload = function(event) {
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
 
-  if (cropper) {
-    cropper.destroy();
-    cropper = null;
-  }
+    userImg.crossOrigin = "anonymous";
+    userImg.loading = "eager";
+    userImg.decoding = "sync";
+    userImg.src = event.target.result;
 
-  userImg.src = url;
-  userImg.style.display = "block";
-  frameImg.style.display = "none";
+    userImg.style.display = "block";
+    frameImg.style.display = "none";
 
-  userImg.onload = () => {
-    cropper = new Cropper(userImg, {
-      aspectRatio: 1,
-      viewMode: 1,
-    });
+    userImg.onload = () => {
+      cropper = new Cropper(userImg, {
+        aspectRatio: 1,
+        viewMode: 1
+      });
+    };
   };
+
+  reader.readAsDataURL(file);
 };
+
 
 cropBtn.onclick = () => {
   if (!cropper) return;
