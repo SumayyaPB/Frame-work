@@ -1,15 +1,15 @@
 const API_URL = "https://frame-work-backend.onrender.com";
 let frameWidth = 1200;
 let frameHeight = 1200;
-const upscaleFactor = 2; // 2x clarity upgrade
+const upscaleFactor = 2;
 let finalCroppedCanvas = null;
 
 /* ---------- FRAME LIST ---------- */
 let frameList = [];
 
 fetch(`${API_URL}/frames-list`)
-  .then((res) => res.json())
-  .then((files) => {
+  .then(res => res.json())
+  .then(files => {
     frameList = files;
     populateFrames();
   });
@@ -18,35 +18,19 @@ function populateFrames() {
   const gallery = document.getElementById("frame-gallery");
   gallery.innerHTML = "";
 
-  frameList.forEach((src) => {
+  frameList.forEach(src => {
     let div = document.createElement("div");
     div.className = "frame-item";
-    div.onclick = () => selectFrame(src); // pass image URL directly
+    div.onclick = () => selectFrame(src);
 
     let img = document.createElement("img");
     img.crossOrigin = "anonymous";
-    img.src = src; // show image directly from Cloudinary
+    img.src = src;
 
     div.appendChild(img);
     gallery.appendChild(div);
   });
 }
-
-
-const gallery = document.getElementById("frame-gallery");
-
-/* Populate frame thumbnails */
-frameList.forEach((src) => {
-  let div = document.createElement("div");
-  div.className = "frame-item";
-  div.onclick = () => selectFrame(src);
-
-  let img = document.createElement("img");
-  img.src = src;
-
-  div.appendChild(img);
-  gallery.appendChild(div);
-});
 
 /* ---------- ELEMENTS ---------- */
 let cropper = null;
@@ -57,7 +41,7 @@ const preview = document.getElementById("preview-area");
 const userImg = document.getElementById("user-photo");
 const frameImg = document.getElementById("selected-frame");
 const uploadInput = document.getElementById("upload");
-const uploadBtn = document.getElementById("uploadBtn"); // <<< NEW BUTTON
+const uploadBtn = document.getElementById("uploadBtn");
 const cropBtn = document.getElementById("cropBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 
@@ -68,16 +52,17 @@ function selectFrame(src) {
   frameImg.onload = () => {
     frameWidth = frameImg.naturalWidth * upscaleFactor;
     frameHeight = frameImg.naturalHeight * upscaleFactor;
-    console.log("Frame UHD size:", frameWidth, frameHeight);
   };
-  
+
   frameImg.crossOrigin = "anonymous";
   frameImg.src = src;
   frameImg.style.display = "block";
   preview.style.display = "block";
   frameApplied = true;
 
-  uploadBtn.style.display = "block";
+  setTimeout(() => {
+    uploadBtn.style.display = "block";
+  }, 200);
 }
 
 /* ---------- CLICK UPLOAD BUTTON ---------- */
@@ -90,8 +75,8 @@ uploadBtn.onclick = () => {
 };
 
 /* ---------- UPLOAD FILE ---------- */
-uploadInput.onchange = (e) => {
-  document.querySelectorAll(".hideCropperUI").forEach((style) => style.remove());
+uploadInput.onchange = e => {
+  document.querySelectorAll(".hideCropperUI").forEach(style => style.remove());
 
   downloadBtn.style.display = "none";
   cropBtn.style.display = "block";
@@ -100,8 +85,8 @@ uploadInput.onchange = (e) => {
   if (!file) return;
 
   const reader = new FileReader();
-  
-  reader.onload = function(event) {
+
+  reader.onload = async function (event) {
     if (cropper) {
       cropper.destroy();
       cropper = null;
@@ -112,21 +97,25 @@ uploadInput.onchange = (e) => {
     userImg.decoding = "sync";
     userImg.src = event.target.result;
 
+    try {
+      await userImg.decode?.();
+    } catch (e) {}
+
     userImg.style.display = "block";
     frameImg.style.display = "none";
 
-    userImg.onload = () => {
+    setTimeout(() => {
       cropper = new Cropper(userImg, {
         aspectRatio: 1,
-        viewMode: 1
+        viewMode: 1,
       });
-    };
+    }, 200);
   };
 
   reader.readAsDataURL(file);
 };
 
-
+/* ---------- CROP ---------- */
 cropBtn.onclick = () => {
   if (!cropper) return;
 
@@ -136,14 +125,14 @@ cropBtn.onclick = () => {
     imageSmoothingEnabled: false,
     imageSmoothingQuality: "high",
   });
-  userImg.src = finalCroppedCanvas.toDataURL("image/png");
+
+  userImg.src = finalCroppedCanvas.toDataURL("image/png", 1.0);
 
   cropper.destroy();
   cropper = null;
 
-  /** Hide crop overlay elements — but NOT the image **/
   const styleFix = document.createElement("style");
-  styleFix.className = "hideCropperUI"; // << IMPORTANT
+  styleFix.className = "hideCropperUI";
   styleFix.innerHTML = `
         .cropper-crop-box,
         .cropper-modal,
@@ -159,7 +148,6 @@ cropBtn.onclick = () => {
 
   userImg.removeAttribute("style");
   userImg.className = "";
-
   frameImg.style.display = "block";
 
   cropBtn.style.display = "none";
@@ -174,15 +162,11 @@ downloadBtn.onclick = () => {
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
 
-  const w = finalCroppedCanvas.width;
-  const h = finalCroppedCanvas.height;
+  canvas.width = finalCroppedCanvas.width;
+  canvas.height = finalCroppedCanvas.height;
 
-  canvas.width = w;
-  canvas.height = h;
-
-  // Reload frame image with CORS enabled
   const tempImage = new Image();
-  tempImage.crossOrigin = "anonymous"; 
+  tempImage.crossOrigin = "anonymous";
   tempImage.src = frameImg.src;
 
   tempImage.onload = () => {
@@ -200,8 +184,7 @@ downloadBtn.onclick = () => {
   };
 };
 
-
-/* ---------- RESET FUNCTION ---------- */
+/* ---------- RESET ---------- */
 function resetUI() {
   if (cropper) {
     cropper.destroy();
