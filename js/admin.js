@@ -43,13 +43,19 @@ function uploadFrame() {
   fetch(`${API_URL}/upload-frame`, {
     method: "POST",
     body: formData,
+    mode: "cors",
   })
     .then((res) => res.json())
     .then((data) => {
       document.getElementById("uploadMsg").innerText = data.message;
       loadFrames();
+    })
+    .catch(err => {
+      console.error("Upload failed:", err);
+      document.getElementById("uploadMsg").innerText = "Upload failed!";
     });
 }
+
 
 // Load frame list from backend
 function loadFrames() {
