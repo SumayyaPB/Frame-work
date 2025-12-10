@@ -1,7 +1,8 @@
 const API_URL = "https://frame-work-backend.onrender.com";
+
 let frameWidth = 1200;
 let frameHeight = 1200;
-const upscaleFactor = 2; // 2x clarity upgrade
+const upscaleFactor = 2;
 let finalCroppedCanvas = null;
 
 /* ---------- FRAME LIST ---------- */
@@ -12,41 +13,35 @@ fetch(`${API_URL}/frames-list`)
   .then((files) => {
     frameList = files;
     populateFrames();
+  })
+  .catch((err) => {
+    console.error("Error loading frames list:", err);
   });
 
+/* ---------- DISPLAY FRAMES ---------- */
 function populateFrames() {
   const gallery = document.getElementById("frame-gallery");
+  if (!gallery) {
+    console.error("No #frame-gallery element found");
+    return;
+  }
+
   gallery.innerHTML = "";
 
   frameList.forEach((src) => {
-    let div = document.createElement("div");
+    const div = document.createElement("div");
     div.className = "frame-item";
-    div.onclick = () => selectFrame(src); // pass image URL directly
 
-    let img = document.createElement("img");
+    const img = document.createElement("img");
     img.crossOrigin = "anonymous";
-    img.src = src; // show image directly from Cloudinary
+    img.src = src;
+
+    div.onclick = () => selectFrame(src);
 
     div.appendChild(img);
     gallery.appendChild(div);
   });
 }
-
-
-const gallery = document.getElementById("frame-gallery");
-
-/* Populate frame thumbnails */
-frameList.forEach((src) => {
-  let div = document.createElement("div");
-  div.className = "frame-item";
-  div.onclick = () => selectFrame(src);
-
-  let img = document.createElement("img");
-  img.src = src;
-
-  div.appendChild(img);
-  gallery.appendChild(div);
-});
 
 /* ---------- ELEMENTS ---------- */
 let cropper = null;
@@ -57,22 +52,28 @@ const preview = document.getElementById("preview-area");
 const userImg = document.getElementById("user-photo");
 const frameImg = document.getElementById("selected-frame");
 const uploadInput = document.getElementById("upload");
-const uploadBtn = document.getElementById("uploadBtn"); // <<< NEW BUTTON
+const uploadBtn = document.getElementById("uploadBtn");
 const cropBtn = document.getElementById("cropBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 
+/* Safety check: log if any element is missing */
+if (!preview || !userImg || !frameImg || !uploadInput || !uploadBtn || !cropBtn || !downloadBtn) {
+  console.error("One or more required DOM elements are missing. Check your HTML IDs.");
+}
+
 /* ---------- SELECT FRAME ---------- */
 function selectFrame(src) {
-  resetUI();
+  resetUI(false); // don't hide gallery
 
   frameImg.onload = () => {
     frameWidth = frameImg.naturalWidth * upscaleFactor;
     frameHeight = frameImg.naturalHeight * upscaleFactor;
-    console.log("Frame UHD size:", frameWidth, frameHeight);
+    console.log("Frame size:", frameWidth, frameHeight);
   };
-  
+
   frameImg.crossOrigin = "anonymous";
   frameImg.src = src;
+
   frameImg.style.display = "block";
   preview.style.display = "block";
   frameApplied = true;
@@ -91,7 +92,10 @@ uploadBtn.onclick = () => {
 
 /* ---------- UPLOAD FILE ---------- */
 uploadInput.onchange = (e) => {
-  document.querySelectorAll(".hideCropperUI").forEach((style) => style.remove());
+  // Remove any old cropper style hacks
+  document
+    .querySelectorAll(".hideCropperUI")
+    .forEach((style) => style.remove());
 
   downloadBtn.style.display = "none";
   cropBtn.style.display = "block";
@@ -100,16 +104,14 @@ uploadInput.onchange = (e) => {
   if (!file) return;
 
   const reader = new FileReader();
-  
-  reader.onload = function(event) {
+
+  reader.onload = function (event) {
     if (cropper) {
       cropper.destroy();
       cropper = null;
     }
 
     userImg.crossOrigin = "anonymous";
-    userImg.loading = "eager";
-    userImg.decoding = "sync";
     userImg.src = event.target.result;
 
     userImg.style.display = "block";
@@ -118,7 +120,7 @@ uploadInput.onchange = (e) => {
     userImg.onload = () => {
       cropper = new Cropper(userImg, {
         aspectRatio: 1,
-        viewMode: 1
+        viewMode: 1,
       });
     };
   };
@@ -126,7 +128,7 @@ uploadInput.onchange = (e) => {
   reader.readAsDataURL(file);
 };
 
-
+/* ---------- CROP ---------- */
 cropBtn.onclick = () => {
   if (!cropper) return;
 
@@ -136,25 +138,25 @@ cropBtn.onclick = () => {
     imageSmoothingEnabled: false,
     imageSmoothingQuality: "high",
   });
+
   userImg.src = finalCroppedCanvas.toDataURL("image/png");
 
   cropper.destroy();
   cropper = null;
 
-  /** Hide crop overlay elements — but NOT the image **/
   const styleFix = document.createElement("style");
-  styleFix.className = "hideCropperUI"; // << IMPORTANT
+  styleFix.className = "hideCropperUI";
   styleFix.innerHTML = `
-        .cropper-crop-box,
-        .cropper-modal,
-        .cropper-drag-box,
-        .cropper-view-box,
-        .cropper-dashed,
-        .cropper-center,
-        .cropper-face {
-            display: none !important;
-        }
-    `;
+    .cropper-crop-box,
+    .cropper-modal,
+    .cropper-drag-box,
+    .cropper-view-box,
+    .cropper-dashed,
+    .cropper-center,
+    .cropper-face {
+        display: none !important;
+    }
+  `;
   document.head.appendChild(styleFix);
 
   userImg.removeAttribute("style");
@@ -172,6 +174,11 @@ downloadBtn.onclick = () => {
   if (!imageCropped || !finalCroppedCanvas) return;
 
   const canvas = document.getElementById("canvas");
+  if (!canvas) {
+    console.error("No #canvas element found");
+    return;
+  }
+
   const ctx = canvas.getContext("2d");
 
   const w = finalCroppedCanvas.width;
@@ -180,9 +187,8 @@ downloadBtn.onclick = () => {
   canvas.width = w;
   canvas.height = h;
 
-  // Reload frame image with CORS enabled
   const tempImage = new Image();
-  tempImage.crossOrigin = "anonymous"; 
+  tempImage.crossOrigin = "anonymous";
   tempImage.src = frameImg.src;
 
   tempImage.onload = () => {
@@ -200,9 +206,8 @@ downloadBtn.onclick = () => {
   };
 };
 
-
-/* ---------- RESET FUNCTION ---------- */
-function resetUI() {
+/* ---------- RESET ---------- */
+function resetUI(hidePreview = true) {
   if (cropper) {
     cropper.destroy();
     cropper = null;
@@ -215,9 +220,11 @@ function resetUI() {
   downloadBtn.style.display = "none";
   uploadBtn.style.display = "none";
 
-  preview.style.display = "none";
-  userImg.style.display = "none";
-  frameImg.style.display = "none";
+  if (hidePreview) {
+    preview.style.display = "none";
+    userImg.style.display = "none";
+    frameImg.style.display = "none";
+  }
 
   userImg.src = "";
   frameImg.src = "";
