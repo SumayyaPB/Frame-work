@@ -78,6 +78,7 @@ function loadFrames() {
 
         let btn = document.createElement("button");
         btn.innerText = "Delete";
+        btn.className = "delete-btn";
         btn.onclick = () => deleteFrame(public_id);
 
         wrapper.appendChild(img);
