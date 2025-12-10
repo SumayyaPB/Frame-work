@@ -135,48 +135,38 @@ cropBtn.onclick = () => {
   finalCroppedCanvas = cropper.getCroppedCanvas({
     width: frameWidth,
     height: frameHeight,
-    imageSmoothingEnabled: true,
+    imageSmoothingEnabled: false,
     imageSmoothingQuality: "high",
   });
+  userImg.src = finalCroppedCanvas.toDataURL("image/png");
 
-  finalCroppedCanvas.toBlob((blob) => {
+  cropper.destroy();
+  cropper = null;
 
-    let imageURL = URL.createObjectURL(blob);
+  /** Hide crop overlay elements — but NOT the image **/
+  const styleFix = document.createElement("style");
+  styleFix.className = "hideCropperUI"; // << IMPORTANT
+  styleFix.innerHTML = `
+        .cropper-crop-box,
+        .cropper-modal,
+        .cropper-drag-box,
+        .cropper-view-box,
+        .cropper-dashed,
+        .cropper-center,
+        .cropper-face {
+            display: none !important;
+        }
+    `;
+  document.head.appendChild(styleFix);
 
-    userImg.style.display = "block";
-    userImg.src = imageURL;
+  userImg.removeAttribute("style");
+  userImg.className = "";
 
-    cropper.destroy();
-    cropper = null;
+  frameImg.style.display = "block";
 
-    /* Force iPhone refresh */
-    userImg.onload = () => {
-      setTimeout(() => {
-
-        // Hide crop UI
-        const styleFix = document.createElement("style");
-        styleFix.className = "hideCropperUI";
-        styleFix.innerHTML = `
-          .cropper-crop-box,
-          .cropper-modal,
-          .cropper-drag-box,
-          .cropper-view-box,
-          .cropper-dashed,
-          .cropper-center,
-          .cropper-face {
-              display:none !important;
-          }
-        `;
-        document.head.appendChild(styleFix);
-
-        frameImg.style.display = "block";
-        cropBtn.style.display = "none";
-        downloadBtn.style.display = "block";
-        imageCropped = true;
-
-      }, 200); // the KEY fix — delay for iPhone
-    };
-  }, "image/png", 1.0);
+  cropBtn.style.display = "none";
+  downloadBtn.style.display = "block";
+  imageCropped = true;
 };
 
 
