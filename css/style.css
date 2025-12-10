@@ -125,3 +125,13 @@
     border-radius: 50%;
     cursor: pointer;
 }
+.delete-btn {
+    width: 80%;
+    background: #cd4e4e;
+    border: none;
+    height: 30px;
+    font-size: 15px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
