@@ -1,8 +1,7 @@
 const API_URL = "https://frame-work-backend.onrender.com";
-
 let frameWidth = 1200;
 let frameHeight = 1200;
-const upscaleFactor = 2;
+const upscaleFactor = 2; // 2x clarity upgrade
 let finalCroppedCanvas = null;
 
 /* ---------- FRAME LIST ---------- */
@@ -13,35 +12,41 @@ fetch(`${API_URL}/frames-list`)
   .then((files) => {
     frameList = files;
     populateFrames();
-  })
-  .catch((err) => {
-    console.error("Error loading frames list:", err);
   });
 
-/* ---------- DISPLAY FRAMES ---------- */
 function populateFrames() {
   const gallery = document.getElementById("frame-gallery");
-  if (!gallery) {
-    console.error("No #frame-gallery element found");
-    return;
-  }
-
   gallery.innerHTML = "";
 
   frameList.forEach((src) => {
-    const div = document.createElement("div");
+    let div = document.createElement("div");
     div.className = "frame-item";
+    div.onclick = () => selectFrame(src); // pass image URL directly
 
-    const img = document.createElement("img");
+    let img = document.createElement("img");
     img.crossOrigin = "anonymous";
-    img.src = src;
-
-    div.onclick = () => selectFrame(src);
+    img.src = src; // show image directly from Cloudinary
 
     div.appendChild(img);
     gallery.appendChild(div);
   });
 }
+
+
+const gallery = document.getElementById("frame-gallery");
+
+/* Populate frame thumbnails */
+frameList.forEach((src) => {
+  let div = document.createElement("div");
+  div.className = "frame-item";
+  div.onclick = () => selectFrame(src);
+
+  let img = document.createElement("img");
+  img.src = src;
+
+  div.appendChild(img);
+  gallery.appendChild(div);
+});
 
 /* ---------- ELEMENTS ---------- */
 let cropper = null;
@@ -52,28 +57,22 @@ const preview = document.getElementById("preview-area");
 const userImg = document.getElementById("user-photo");
 const frameImg = document.getElementById("selected-frame");
 const uploadInput = document.getElementById("upload");
-const uploadBtn = document.getElementById("uploadBtn");
+const uploadBtn = document.getElementById("uploadBtn"); // <<< NEW BUTTON
 const cropBtn = document.getElementById("cropBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 
-/* Safety check: log if any element is missing */
-if (!preview || !userImg || !frameImg || !uploadInput || !uploadBtn || !cropBtn || !downloadBtn) {
-  console.error("One or more required DOM elements are missing. Check your HTML IDs.");
-}
-
 /* ---------- SELECT FRAME ---------- */
 function selectFrame(src) {
-  resetUI(false); // don't hide gallery
+  resetUI();
 
   frameImg.onload = () => {
     frameWidth = frameImg.naturalWidth * upscaleFactor;
     frameHeight = frameImg.naturalHeight * upscaleFactor;
-    console.log("Frame size:", frameWidth, frameHeight);
+    console.log("Frame UHD size:", frameWidth, frameHeight);
   };
-
+  
   frameImg.crossOrigin = "anonymous";
   frameImg.src = src;
-
   frameImg.style.display = "block";
   preview.style.display = "block";
   frameApplied = true;
@@ -92,10 +91,7 @@ uploadBtn.onclick = () => {
 
 /* ---------- UPLOAD FILE ---------- */
 uploadInput.onchange = (e) => {
-  // Remove any old cropper style hacks
-  document
-    .querySelectorAll(".hideCropperUI")
-    .forEach((style) => style.remove());
+  document.querySelectorAll(".hideCropperUI").forEach((style) => style.remove());
 
   downloadBtn.style.display = "none";
   cropBtn.style.display = "block";
@@ -104,14 +100,16 @@ uploadInput.onchange = (e) => {
   if (!file) return;
 
   const reader = new FileReader();
-
-  reader.onload = function (event) {
+  
+  reader.onload = function(event) {
     if (cropper) {
       cropper.destroy();
       cropper = null;
     }
 
     userImg.crossOrigin = "anonymous";
+    userImg.loading = "eager";
+    userImg.decoding = "sync";
     userImg.src = event.target.result;
 
     userImg.style.display = "block";
@@ -120,7 +118,7 @@ uploadInput.onchange = (e) => {
     userImg.onload = () => {
       cropper = new Cropper(userImg, {
         aspectRatio: 1,
-        viewMode: 1,
+        viewMode: 1
       });
     };
   };
@@ -128,70 +126,52 @@ uploadInput.onchange = (e) => {
   reader.readAsDataURL(file);
 };
 
-/* ---------- CROP ---------- */
+
 cropBtn.onclick = () => {
   if (!cropper) return;
 
   finalCroppedCanvas = cropper.getCroppedCanvas({
     width: frameWidth,
     height: frameHeight,
-    imageSmoothingEnabled: true,
+    imageSmoothingEnabled: false,
     imageSmoothingQuality: "high",
   });
+  userImg.src = finalCroppedCanvas.toDataURL("image/png");
 
-  // IMPORTANT — toBlob fixes Safari issue
-  finalCroppedCanvas.toBlob((blob) => {
+  cropper.destroy();
+  cropper = null;
 
-    const imageURL = URL.createObjectURL(blob);
+  /** Hide crop overlay elements — but NOT the image **/
+  const styleFix = document.createElement("style");
+  styleFix.className = "hideCropperUI"; // << IMPORTANT
+  styleFix.innerHTML = `
+        .cropper-crop-box,
+        .cropper-modal,
+        .cropper-drag-box,
+        .cropper-view-box,
+        .cropper-dashed,
+        .cropper-center,
+        .cropper-face {
+            display: none !important;
+        }
+    `;
+  document.head.appendChild(styleFix);
 
-    userImg.style.display = "block";
-    userImg.src = imageURL;
+  userImg.removeAttribute("style");
+  userImg.className = "";
 
-    // 👇 Wait for Safari repaint — CRITICAL FIX
-    userImg.onload = () => {
-      setTimeout(() => {
+  frameImg.style.display = "block";
 
-        cropper.destroy();
-        cropper = null;
-
-        // hide cropper UI overlays
-        const styleFix = document.createElement("style");
-        styleFix.className = "hideCropperUI";
-        styleFix.innerHTML = `
-          .cropper-crop-box,
-          .cropper-modal,
-          .cropper-drag-box,
-          .cropper-view-box,
-          .cropper-dashed,
-          .cropper-center,
-          .cropper-face {
-              display:none !important;
-          }
-        `;
-        document.head.appendChild(styleFix);
-
-        frameImg.style.display = "block";
-        cropBtn.style.display = "none";
-        downloadBtn.style.display = "block";
-        imageCropped = true;
-
-      }, 200); // ← Safari needs a small delay to redraw
-    };
-
-  }, "image/png", 1.0);
+  cropBtn.style.display = "none";
+  downloadBtn.style.display = "block";
+  imageCropped = true;
 };
-
 
 /* ---------- DOWNLOAD FINAL ---------- */
 downloadBtn.onclick = () => {
   if (!imageCropped || !finalCroppedCanvas) return;
 
   const canvas = document.getElementById("canvas");
-  if (!canvas) {
-    console.error("No #canvas element found");
-    return;
-  }
-
   const ctx = canvas.getContext("2d");
 
   const w = finalCroppedCanvas.width;
@@ -200,8 +180,9 @@ downloadBtn.onclick = () => {
   canvas.width = w;
   canvas.height = h;
 
+  // Reload frame image with CORS enabled
   const tempImage = new Image();
-  tempImage.crossOrigin = "anonymous";
+  tempImage.crossOrigin = "anonymous"; 
   tempImage.src = frameImg.src;
 
   tempImage.onload = () => {
@@ -219,8 +200,9 @@ downloadBtn.onclick = () => {
   };
 };
 
-/* ---------- RESET ---------- */
-function resetUI(hidePreview = true) {
+
+/* ---------- RESET FUNCTION ---------- */
+function resetUI() {
   if (cropper) {
     cropper.destroy();
     cropper = null;
@@ -233,11 +215,9 @@ function resetUI(hidePreview = true) {
   downloadBtn.style.display = "none";
   uploadBtn.style.display = "none";
 
-  if (hidePreview) {
-    preview.style.display = "none";
-    userImg.style.display = "none";
-    frameImg.style.display = "none";
-  }
+  preview.style.display = "none";
+  userImg.style.display = "none";
+  frameImg.style.display = "none";
 
   userImg.src = "";
   frameImg.src = "";
