@@ -1,4 +1,5 @@
 const API_URL = "https://frame-work-backend.onrender.com";
+
 let frameWidth = 1200;
 let frameHeight = 1200;
 const upscaleFactor = 2;
@@ -14,6 +15,7 @@ fetch(`${API_URL}/frames-list`)
     populateFrames();
   });
 
+/* ---------- DISPLAY FRAMES ---------- */
 function populateFrames() {
   const gallery = document.getElementById("frame-gallery");
   gallery.innerHTML = "";
@@ -21,10 +23,12 @@ function populateFrames() {
   frameList.forEach(src => {
     let div = document.createElement("div");
     div.className = "frame-item";
+
     div.onclick = () => selectFrame(src);
 
     let img = document.createElement("img");
     img.crossOrigin = "anonymous";
+    img.loading = "lazy";
     img.src = src;
 
     div.appendChild(img);
@@ -55,7 +59,10 @@ function selectFrame(src) {
   };
 
   frameImg.crossOrigin = "anonymous";
+  frameImg.loading = "eager";
+  frameImg.decoding = "sync";
   frameImg.src = src;
+
   frameImg.style.display = "block";
   preview.style.display = "block";
   frameApplied = true;
@@ -155,7 +162,7 @@ cropBtn.onclick = () => {
   imageCropped = true;
 };
 
-/* ---------- DOWNLOAD FINAL ---------- */
+/* ---------- DOWNLOAD ---------- */
 downloadBtn.onclick = () => {
   if (!imageCropped || !finalCroppedCanvas) return;
 
