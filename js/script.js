@@ -129,53 +129,44 @@ uploadInput.onchange = (e) => {
 };
 
 /* ---------- CROP ---------- */
-cropBtn.onclick = async () => {
+cropBtn.onclick = () => {
   if (!cropper) return;
 
   finalCroppedCanvas = cropper.getCroppedCanvas({
     width: frameWidth,
     height: frameHeight,
-    imageSmoothingEnabled: true,
+    imageSmoothingEnabled: false,
     imageSmoothingQuality: "high",
   });
+  userImg.src = finalCroppedCanvas.toDataURL("image/png");
 
-  // Convert to blob (Safari safe version)
-  finalCroppedCanvas.toBlob(async (blob) => {
+  cropper.destroy();
+  cropper = null;
 
-    const imageURL = URL.createObjectURL(blob);
-
-    userImg.src = imageURL;
-    userImg.style.display = "block";
-
-    // Wait for iPhone to render decoded image
-    try {
-      await userImg.decode?.();
-    } catch(e) {}
-
-    cropper.destroy();
-    cropper = null;
-
-    const styleFix = document.createElement("style");
-    styleFix.className = "hideCropperUI";
-    styleFix.innerHTML = `
-      .cropper-crop-box,
-      .cropper-modal,
-      .cropper-drag-box,
-      .cropper-view-box,
-      .cropper-dashed,
-      .cropper-center,
-      .cropper-face {
-          display:none !important;
-      }
+  /** Hide crop overlay elements — but NOT the image **/
+  const styleFix = document.createElement("style");
+  styleFix.className = "hideCropperUI"; // << IMPORTANT
+  styleFix.innerHTML = `
+        .cropper-crop-box,
+        .cropper-modal,
+        .cropper-drag-box,
+        .cropper-view-box,
+        .cropper-dashed,
+        .cropper-center,
+        .cropper-face {
+            display: none !important;
+        }
     `;
-    document.head.appendChild(styleFix);
+  document.head.appendChild(styleFix);
 
-    frameImg.style.display = "block";
-    cropBtn.style.display = "none";
-    downloadBtn.style.display = "block";
-    imageCropped = true;
+  userImg.removeAttribute("style");
+  userImg.className = "";
 
-  }, "image/png", 1.0);
+  frameImg.style.display = "block";
+
+  cropBtn.style.display = "none";
+  downloadBtn.style.display = "block";
+  imageCropped = true;
 };
 
 
