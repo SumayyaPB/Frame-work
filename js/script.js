@@ -135,38 +135,50 @@ cropBtn.onclick = () => {
   finalCroppedCanvas = cropper.getCroppedCanvas({
     width: frameWidth,
     height: frameHeight,
-    imageSmoothingEnabled: false,
+    imageSmoothingEnabled: true,
     imageSmoothingQuality: "high",
   });
-  userImg.src = finalCroppedCanvas.toDataURL("image/png");
 
-  cropper.destroy();
-  cropper = null;
+  // IMPORTANT — toBlob fixes Safari issue
+  finalCroppedCanvas.toBlob((blob) => {
 
-  /** Hide crop overlay elements — but NOT the image **/
-  const styleFix = document.createElement("style");
-  styleFix.className = "hideCropperUI"; // << IMPORTANT
-  styleFix.innerHTML = `
-        .cropper-crop-box,
-        .cropper-modal,
-        .cropper-drag-box,
-        .cropper-view-box,
-        .cropper-dashed,
-        .cropper-center,
-        .cropper-face {
-            display: none !important;
-        }
-    `;
-  document.head.appendChild(styleFix);
+    const imageURL = URL.createObjectURL(blob);
 
-  userImg.removeAttribute("style");
-  userImg.className = "";
+    userImg.style.display = "block";
+    userImg.src = imageURL;
 
-  frameImg.style.display = "block";
+    // 👇 Wait for Safari repaint — CRITICAL FIX
+    userImg.onload = () => {
+      setTimeout(() => {
 
-  cropBtn.style.display = "none";
-  downloadBtn.style.display = "block";
-  imageCropped = true;
+        cropper.destroy();
+        cropper = null;
+
+        // hide cropper UI overlays
+        const styleFix = document.createElement("style");
+        styleFix.className = "hideCropperUI";
+        styleFix.innerHTML = `
+          .cropper-crop-box,
+          .cropper-modal,
+          .cropper-drag-box,
+          .cropper-view-box,
+          .cropper-dashed,
+          .cropper-center,
+          .cropper-face {
+              display:none !important;
+          }
+        `;
+        document.head.appendChild(styleFix);
+
+        frameImg.style.display = "block";
+        cropBtn.style.display = "none";
+        downloadBtn.style.display = "block";
+        imageCropped = true;
+
+      }, 200); // ← Safari needs a small delay to redraw
+    };
+
+  }, "image/png", 1.0);
 };
 
 
