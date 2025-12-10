@@ -135,38 +135,48 @@ cropBtn.onclick = () => {
   finalCroppedCanvas = cropper.getCroppedCanvas({
     width: frameWidth,
     height: frameHeight,
-    imageSmoothingEnabled: false,
+    imageSmoothingEnabled: true,
     imageSmoothingQuality: "high",
   });
-  userImg.src = finalCroppedCanvas.toDataURL("image/png");
 
-  cropper.destroy();
-  cropper = null;
+  finalCroppedCanvas.toBlob((blob) => {
 
-  /** Hide crop overlay elements — but NOT the image **/
-  const styleFix = document.createElement("style");
-  styleFix.className = "hideCropperUI"; // << IMPORTANT
-  styleFix.innerHTML = `
-        .cropper-crop-box,
-        .cropper-modal,
-        .cropper-drag-box,
-        .cropper-view-box,
-        .cropper-dashed,
-        .cropper-center,
-        .cropper-face {
-            display: none !important;
-        }
-    `;
-  document.head.appendChild(styleFix);
+    let imageURL = URL.createObjectURL(blob);
 
-  userImg.removeAttribute("style");
-  userImg.className = "";
+    userImg.style.display = "block";
+    userImg.src = imageURL;
 
-  frameImg.style.display = "block";
+    cropper.destroy();
+    cropper = null;
 
-  cropBtn.style.display = "none";
-  downloadBtn.style.display = "block";
-  imageCropped = true;
+    /* Force iPhone refresh */
+    userImg.onload = () => {
+      setTimeout(() => {
+
+        // Hide crop UI
+        const styleFix = document.createElement("style");
+        styleFix.className = "hideCropperUI";
+        styleFix.innerHTML = `
+          .cropper-crop-box,
+          .cropper-modal,
+          .cropper-drag-box,
+          .cropper-view-box,
+          .cropper-dashed,
+          .cropper-center,
+          .cropper-face {
+              display:none !important;
+          }
+        `;
+        document.head.appendChild(styleFix);
+
+        frameImg.style.display = "block";
+        cropBtn.style.display = "none";
+        downloadBtn.style.display = "block";
+        imageCropped = true;
+
+      }, 200); // the KEY fix — delay for iPhone
+    };
+  }, "image/png", 1.0);
 };
 
 
